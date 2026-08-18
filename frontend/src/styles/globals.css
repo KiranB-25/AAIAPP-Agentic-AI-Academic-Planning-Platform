@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #f8fafc;
+  --color-foreground: #172033;
+  --color-card: #ffffff;
+  --color-card-foreground: #172033;
+  --color-primary: #1d4f91;
+  --color-primary-foreground: #ffffff;
+  --color-muted-foreground: #64748b;
+  --color-border: #dbe3ee;
+  --color-success: #15803d;
+  --color-destructive: #b91c1c;
+}
+
+@layer base {
+  * { @apply border-border; }
+  body { @apply m-0 min-w-80 bg-background font-sans antialiased; }
+  button, input, textarea, select { font: inherit; }
+  :focus-visible { @apply outline-2 outline-offset-2 outline-primary; }
+}

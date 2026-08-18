@@ -1,0 +1,11 @@
+import { useEffect, useState } from "react";
+import { AppShell } from "../layouts/AppShell";
+import { listStudentReviews, type PlanReview } from "../services/review-service";
+import { listNotifications, markNotificationRead, unreadCount, type Notification } from "../services/notification-service";
+
+export function StudentReviewsPage() {
+  const [reviews, setReviews] = useState<PlanReview[]>([]); const [notifications, setNotifications] = useState<Notification[]>([]); const [count, setCount] = useState(0); const [error, setError] = useState<string | null>(null); const [loading, setLoading] = useState(true);
+  useEffect(() => { void Promise.all([listStudentReviews(), listNotifications(), unreadCount()]).then(([r, n, c]) => { setReviews(r); setNotifications(n); setCount(c.unread_count); }).catch(() => setError("Unable to load feedback and notifications.")).finally(() => setLoading(false)); }, []);
+  async function read(notification: Notification) { try { const updated = await markNotificationRead(notification.id); setNotifications((current) => current.map((n) => n.id === updated.id ? updated : n)); if (!notification.read_at) setCount((current) => Math.max(0, current - 1)); } catch { setError("Unable to mark the notification as read."); } }
+  return <AppShell><div className="space-y-6"><header><p className="text-sm font-medium text-primary">Student workspace</p><h1 className="mt-2 text-3xl font-semibold">Supervisor feedback</h1></header>{error && <p role="alert">{error}</p>}{loading ? <p role="status">Loading feedback and notifications…</p> : <><section><h2 className="text-xl font-semibold">Reviews</h2>{reviews.length ? reviews.map((r) => <article className="mt-3 rounded border p-4" key={r.id}><strong>{r.decision.replace("_", " ")}</strong><p>{r.feedback_text}</p></article>) : <p className="mt-2">No supervisor feedback yet.</p>}</section><section><h2 className="text-xl font-semibold">Notifications <span aria-label={`${count} unread notifications`}>({count} unread)</span></h2>{notifications.length ? notifications.map((n) => <article className="mt-3 rounded border p-4" key={n.id}><strong>{n.title}</strong><p>{n.message}</p>{!n.read_at && <button className="mt-2 rounded border px-2 py-1" onClick={() => void read(n)}>Mark as read</button>}</article>) : <p className="mt-2">No notifications yet.</p>}</section></>}</div></AppShell>;
+}
